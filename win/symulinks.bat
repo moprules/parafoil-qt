@@ -18,5 +18,13 @@ if not exist parafoil\ (
   echo parafoil exist yet 
 )
 
+rem Создаём символьную ссылку на пакет flyplot
+if not exist flyplot\ (
+  del flyplot
+  MKLINK /D .\flyplot  .\submodules\flyplot\flyplot
+) else (
+  echo flyplot exist yet 
+)
+
 rem пауза
 pause
