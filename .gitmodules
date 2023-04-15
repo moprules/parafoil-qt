@@ -2,3 +2,7 @@
 	path = submodules/parafoil
 	url = git@github.com:moprules/parafoil.git
 	branch = dev
+[submodule "submodules/flyplot"]
+	path = submodules/flyplot
+	url = git@github.com:moprules/flyplot.git
+	branch = dev

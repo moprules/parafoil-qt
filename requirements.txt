@@ -1,1 +1,2 @@
 -r submodules/parafoil/requirements.txt
+-r submodules/flyplot/requirements.txt
