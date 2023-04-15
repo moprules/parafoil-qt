@@ -1,0 +1,4 @@
+[submodule "submodules/parafoil"]
+	path = submodules/parafoil
+	url = git@github.com:moprules/parafoil.git
+	branch = dev
