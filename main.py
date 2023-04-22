@@ -30,6 +30,7 @@ class MainForm(QWidget):
         self.layout.addWidget(self.abort_btn)
 
         self.grafic = Graph3DWindow("grafics/matlab.txt")
+        self.grafic.graph.addChart("grafics/test.txt")
         self.grafic.show()
 
     # Instantiate and start a new thread
@@ -37,7 +38,7 @@ class MainForm(QWidget):
         self.progress_bar.setValue(0)
         self.worker = WorkerThread(self)
         self.worker.start()
-    
+
     def abort_thread(self):
         if hasattr(self, "worker"):
             self.worker.terminate()
@@ -51,11 +52,15 @@ class MainForm(QWidget):
         if value:
             self.grafic.graph.addChart("grafics/ans.txt")
     
+    @Slot(list)
+    def upd_chart(self, pos):
+        self.grafic.graph.updChart("Python", pos)
+
     def closeEvent(self, event: QCloseEvent):
 
         if hasattr(self, "worker"):
             self.worker.terminate()
-        
+
         if self.grafic:
             self.grafic.close()
 
@@ -66,6 +71,7 @@ class MainForm(QWidget):
 class MySignals(QObject):
     progresSignal = Signal(int)
     compliteSignal = Signal(bool)
+    updChartSignal = Signal(list)
 
 
 # Create the Worker Thread
@@ -76,6 +82,8 @@ class WorkerThread(QThread):
         self.signals = MySignals()
         self.signals.progresSignal.connect(parent.update_statusbar)
         self.signals.compliteSignal.connect(parent.complite_calc)
+        self.signals.updChartSignal.connect(parent.upd_chart)
+        self.pos = []
 
     def run(self):
         # Do something on the worker thread
@@ -85,15 +93,33 @@ class WorkerThread(QThread):
         lander.build()
         # Задаём начальные состояния
         lander.init_state()
+        self.pos = []
         start_alt = lander.state["altitude"]
+        pos_north = lander.state["pos_north"]
+        pos_east = lander.state["pos_east"]
+        altitude = lander.state["altitude"]
+        self.pos.append([pos_north, pos_east, altitude])
         # Цикл расчёта
+        cnt = 0
         while lander.state["time"] < lander.model["time"]["final"] and lander.state["altitude"] > 0:
             lander.step()
+
+            pos_north = lander.state["pos_north"]
+            pos_east = lander.state["pos_east"]
+            altitude = lander.state["altitude"]
+            self.pos.append([pos_north, pos_east, altitude])
+
+            cnt += 1
+            if cnt > 199:
+                self.signals.updChartSignal.emit(self.pos)
+                cnt = 0
+
             loast_alt = start_alt - lander.state["altitude"]
             progres = int(100*loast_alt/start_alt)
             self.signals.progresSignal.emit(progres)
         lander.ans_file.close()
-        self.signals.compliteSignal.emit(True)
+        self.signals.updChartSignal.emit(self.pos)
+        # self.signals.compliteSignal.emit(True)
         elapsed = time.time() - st
         print("elapsed =", elapsed)
 

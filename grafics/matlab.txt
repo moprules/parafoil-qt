@@ -1,4 +1,4 @@
-name: Trajectory 1
+name: Matlab
 type: 3D
 x: North | m
 y: East  | m
