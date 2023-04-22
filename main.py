@@ -1,9 +1,11 @@
 import sys
 from PySide6.QtCore import QObject, QThread, Signal, Slot
 from PySide6.QtWidgets import QApplication, QPushButton, QVBoxLayout, QWidget, QProgressBar
+from PySide6.QtGui import QCloseEvent
 
 from parafoil import PFSim
 from flyplot import Graph3DWindow
+import time
 
 # Create a basic window with a layout and a button
 
@@ -19,26 +21,26 @@ class MainForm(QWidget):
         self.progress_bar.setValue(0)
         self.layout.addWidget(self.progress_bar)
 
-        self.button = QPushButton("Click me!")
-        self.button.clicked.connect(self.start_thread)
-        self.layout.addWidget(self.button)
+        self.start_btn = QPushButton("Start!")
+        self.start_btn.clicked.connect(self.start_thread)
+        self.layout.addWidget(self.start_btn)
+
+        self.abort_btn = QPushButton("Abort")
+        self.abort_btn.clicked.connect(self.abort_thread)
+        self.layout.addWidget(self.abort_btn)
 
         self.grafic = Graph3DWindow("grafics/matlab.txt")
         self.grafic.show()
 
     # Instantiate and start a new thread
     def start_thread(self):
-        instanced_thread = WorkerThread(self)
-        instanced_thread.start()
-
-    # Create the Slots that will receive signals
-    @Slot(str)
-    def update_str_field(self, message):
-        print(message)
-
-    @Slot(int)
-    def update_int_field(self, value):
-        print(value)
+        self.progress_bar.setValue(0)
+        self.worker = WorkerThread(self)
+        self.worker.start()
+    
+    def abort_thread(self):
+        if hasattr(self, "worker"):
+            self.worker.terminate()
 
     @Slot(int)
     def update_statusbar(self, value):
@@ -48,6 +50,16 @@ class MainForm(QWidget):
     def complite_calc(self, value):
         if value:
             self.grafic.graph.addChart("grafics/ans.txt")
+    
+    def closeEvent(self, event: QCloseEvent):
+
+        if hasattr(self, "worker"):
+            self.worker.terminate()
+        
+        if self.grafic:
+            self.grafic.close()
+
+        super().closeEvent(event)
 
 
 # Signals must inherit QObject
@@ -67,6 +79,7 @@ class WorkerThread(QThread):
 
     def run(self):
         # Do something on the worker thread
+        st = time.time()
         lander = PFSim("data/space_rider.yaml")
         # Собираем модель при первом запуске
         lander.build()
@@ -81,6 +94,8 @@ class WorkerThread(QThread):
             self.signals.progresSignal.emit(progres)
         lander.ans_file.close()
         self.signals.compliteSignal.emit(True)
+        elapsed = time.time() - st
+        print("elapsed =", elapsed)
 
 
 if __name__ == "__main__":
