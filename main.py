@@ -88,7 +88,7 @@ class WorkerThread(QThread):
     def run(self):
         # Do something on the worker thread
         st = time.time()
-        lander = PFSim("data/space_rider.yaml")
+        lander = PFSim("data/ru_rider.yaml")
         # Собираем модель при первом запуске
         lander.build()
         # Задаём начальные состояния
