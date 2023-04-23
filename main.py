@@ -7,14 +7,12 @@ from parafoil import PFSim
 from flyplot import Graph3DWindow
 import time
 
-# Create a basic window with a layout and a button
-
 
 class MainForm(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.setWindowTitle("My Form")
-        self.layout = QVBoxLayout()
+        self.layout = QVBoxLayout()  # type: ignore
         self.setLayout(self.layout)
         # создаем прогресс-бар
         self.progress_bar = QProgressBar(self)
@@ -88,7 +86,7 @@ class WorkerThread(QThread):
     def run(self):
         # Do something on the worker thread
         st = time.time()
-        lander = PFSim("data/ru_rider.yaml")
+        lander = PFSim("data/space_rider.yaml")
         # Собираем модель при первом запуске
         lander.build()
         # Задаём начальные состояния
