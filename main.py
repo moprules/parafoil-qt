@@ -51,7 +51,7 @@ class MainForm(QWidget):
     def complite_calc(self, value):
         if value:
             self.grafic.graph.addChart("grafics/ans.txt")
-    
+
     @Slot(list)
     def upd_chart(self, pos):
         self.grafic.graph.updChart("Python", pos)
