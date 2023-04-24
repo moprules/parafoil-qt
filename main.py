@@ -110,13 +110,16 @@ class WorkerThread(QThread):
             cnt += 1
             if cnt > 199:
                 self.signals.updChartSignal.emit(self.pos)
+                loast_alt = start_alt - lander.state["altitude"]
+                progres = int(100*loast_alt/start_alt)
+                self.signals.progresSignal.emit(progres)
                 cnt = 0
-
-            loast_alt = start_alt - lander.state["altitude"]
-            progres = int(100*loast_alt/start_alt)
-            self.signals.progresSignal.emit(progres)
         lander.ans_file.close()
+        
         self.signals.updChartSignal.emit(self.pos)
+        loast_alt = start_alt - lander.state["altitude"]
+        progres = int(100*loast_alt/start_alt)
+        self.signals.progresSignal.emit(progres)
         # self.signals.compliteSignal.emit(True)
         elapsed = time.time() - st
         print("elapsed =", elapsed)
