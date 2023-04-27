@@ -3,6 +3,14 @@ type: 3D
 x: North | m
 y: East  | m
 z: Altitude | m
+
+cube:
+0 0 2000
+1100 -1900 0
+
+areas:
+50 1100 -1900 0
+
 coords:
 0.000   -> 0 0 2000
 0.005   -> 0.125 0.0 2000.0
