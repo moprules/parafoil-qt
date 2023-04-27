@@ -48,7 +48,7 @@ class MainForm(QWidget):
     @Slot(bool)
     def complite_calc(self, value):
         if value:
-            self.grafic.graph.addChart("grafics/ans.txt")
+            pass
 
     @Slot(list)
     def upd_chart(self, pos):
@@ -86,7 +86,7 @@ class WorkerThread(QThread):
     def run(self):
         # Do something on the worker thread
         st = time.time()
-        lander = PFSim("data/space_rider.yaml")
+        lander = PFSim("data/space_rider.yaml", "grafics")
         # Собираем модель при первом запуске
         lander.build()
         # Задаём начальные состояния
@@ -108,14 +108,16 @@ class WorkerThread(QThread):
             self.pos.append([pos_north, pos_east, altitude])
 
             cnt += 1
-            if cnt > 199:
+            if cnt >= 200:
                 self.signals.updChartSignal.emit(self.pos)
                 loast_alt = start_alt - lander.state["altitude"]
                 progres = int(100*loast_alt/start_alt)
                 self.signals.progresSignal.emit(progres)
                 cnt = 0
-        lander.ans_file.close()
-        
+
+        for key in lander.files:
+            lander.files[key].close()
+
         self.signals.updChartSignal.emit(self.pos)
         loast_alt = start_alt - lander.state["altitude"]
         progres = int(100*loast_alt/start_alt)
