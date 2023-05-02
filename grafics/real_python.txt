@@ -1,8 +1,8 @@
 name: Trajectory 2
 type: 3D
-x: North | m
-y: East  | m
-z: Altitude | m
+x: North | м
+y: East  | м
+z: Altitude | м
 
 cube:
 0 0 2000
