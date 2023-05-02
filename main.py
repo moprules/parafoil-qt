@@ -131,14 +131,19 @@ class MainForm(QtWidgets.QWidget):
         # Список открытых результатов
         self.openPlots = defaultdict(lambda: {"path": "", "wins": []})
         self.windows = []
-        # self.grafic = Graph3DWindow("grafics/matlab.txt")
-        # self.grafic.graph.addChart("grafics/test.txt")
-        # self.grafic.show()
+        self.isCloseFromMain = False
 
     def wasClosed(self, w):
-        for val in self.openPlots.values():
+        if not self.isCloseFromMain:
+
+            for val in self.openPlots.values():
+                try:
+                    val["wins"].remove(w)
+                except:
+                    pass
+            
             try:
-                val["wins"].remove(w)
+                self.windows.remove(w)
             except:
                 pass
 
@@ -158,13 +163,13 @@ class MainForm(QtWidgets.QWidget):
 
     @Slot()
     def on_empty3D(self):
-        w = flyplot.PlotWindow(chart_type="3D")
+        w = flyplot.PlotWindow(self, chart_type="3D")
         self.windows.append(w)
         w.show()
 
     @Slot()
     def on_empty2D(self):
-        w = flyplot.PlotWindow(chart_type="2D")
+        w = flyplot.PlotWindow(self, chart_type="2D")
         self.windows.append(w)
         w.show()
 
@@ -250,8 +255,10 @@ class MainForm(QtWidgets.QWidget):
         if hasattr(self, "worker"):
             self.worker.terminate()
 
+        self.isCloseFromMain = True
         for w in self.windows:
             w.close()
+        self.isCloseFromMain = False
 
         super().closeEvent(event)
 
