@@ -2,7 +2,7 @@ import os
 import sys
 import time
 import numpy as np
-from typing import List
+from functools import partial
 from collections import defaultdict
 from PySide6.QtCore import QObject, QThread, Signal, Slot, Qt
 from PySide6 import QtWidgets
@@ -47,21 +47,28 @@ class ResListWidget(QtWidgets.QListWidget):
 
     def contextMenuEvent(self, event):
         item: ResListItem = self.itemAt(event.pos())
-        print(item.text())
-        print(item.windows)
         # Создаем контекстное меню
         contextMenu = QtWidgets.QMenu(self)
 
         # Добавляем пункты меню
-        openAction = QtGui.QAction('Открыть')
+        openAction = QtGui.QAction('Открыть в новом окне')
+        openAction.triggered.connect(partial(self.my_parent.openPlot, item))
         contextMenu.addAction(openAction)
 
-        # if item.windows:
-        #     # Добавляем пункты меню
-        #     openNewWindow = QtGui.QAction('Открыть в')
-        #     # icon = flyplot.get_icon("grafic")
-        #     # openNewWindow.setIcon(icon)
-        #     contextMenu.addAction(openNewWindow)
+        openInMenu = QtWidgets.QMenu('Открыть в')
+        chart_type = "3D" if item.text() == "tr_3d" else "2D"
+        isFind = False
+        for i, w in enumerate(self.my_parent.windows):
+            if w.chart_type == chart_type:
+                isFind = True
+                description = w.getDescription()
+                if not description:
+                    description = "<empty>"
+                openInAction = QtGui.QAction(f"{i+1} -  {description}")
+                openInAction.triggered.connect(partial(self.my_parent.openPlotIn, w, item))
+                openInMenu.addAction(openInAction)
+        if isFind:
+            contextMenu.addMenu(openInMenu)
 
         # Показываем контекстное меню
         contextMenu.exec(event.globalPos())
@@ -129,14 +136,14 @@ class MainForm(QtWidgets.QWidget):
         self.__layout.addWidget(self.resList)
 
         # Список открытых результатов
-        self.openPlots = defaultdict(lambda: {"path": "", "wins": []})
+        self.openedWins = defaultdict(lambda: {"path": "", "wins": []})
         self.windows = []
         self.isCloseFromMain = False
 
     def wasClosed(self, w):
         if not self.isCloseFromMain:
 
-            for val in self.openPlots.values():
+            for val in self.openedWins.values():
                 try:
                     val["wins"].remove(w)
                 except:
@@ -156,10 +163,16 @@ class MainForm(QtWidgets.QWidget):
         w.show()
         w.addChart(item.file_path)
         self.windows.append(w)
-        self.openPlots[plot_name]["path"] = item.file_path
-        self.openPlots[plot_name]["wins"].append(w)
-
+        self.openedWins[plot_name]["path"] = item.file_path
+        self.openedWins[plot_name]["wins"].append(w)
         self.worker.setBlockPlay(False)
+    
+    def openPlotIn(self, w: flyplot.PlotWindow, item: ResListItem):
+        plot_name = item.text()
+        w.addChart(item.file_path)
+        self.openedWins[plot_name]["path"] = item.file_path
+        self.openedWins[plot_name]["wins"].append(w)
+
 
     @Slot()
     def on_empty3D(self):
@@ -213,7 +226,7 @@ class MainForm(QtWidgets.QWidget):
             self.play_btn.isFirst = True
             self.play_btn.setIcon(flyplot.get_icon("play"))
             self.progress_bar.setValue(0)
-            self.openPlots = defaultdict(lambda: {"path": "", "wins": []})
+            self.openedWins = defaultdict(lambda: {"path": "", "wins": []})
 
     @Slot(float)
     def update_progressbar(self, value: float):
@@ -229,7 +242,7 @@ class MainForm(QtWidgets.QWidget):
 
     @Slot(dict)
     def upd_chart(self, cache: dict):
-        for plot_name in self.openPlots:
+        for plot_name in self.openedWins:
             kargs = {}
             if plot_name == "tr_3d":
                 kargs["pos"] = cache["pos"]
@@ -246,8 +259,8 @@ class MainForm(QtWidgets.QWidget):
                 kargs["x"] = cache["t"]
                 kargs["y"] = cache[plot_name]
 
-            file_path = self.openPlots[plot_name]["path"]
-            for w in self.openPlots[plot_name]["wins"]:
+            file_path = self.openedWins[plot_name]["path"]
+            for w in self.openedWins[plot_name]["wins"]:
                 w.updChart(file_path, **kargs)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
