@@ -57,17 +57,17 @@ class ResListWidget(QtWidgets.QListWidget):
 
         openInMenu = QtWidgets.QMenu('Открыть в')
         chart_type = "3D" if item.text() == "tr_3d" else "2D"
-        isFind = False
+        actions = []
         for i, w in enumerate(self.my_parent.windows):
             if w.chart_type == chart_type:
-                isFind = True
                 description = w.getDescription()
                 if not description:
                     description = "<empty>"
                 openInAction = QtGui.QAction(f"{i+1} -  {description}")
                 openInAction.triggered.connect(partial(self.my_parent.openPlotIn, w, item))
-                openInMenu.addAction(openInAction)
-        if isFind:
+                actions.append(openInAction)                
+        if actions:
+            openInMenu.addActions(actions)
             contextMenu.addMenu(openInMenu)
 
         # Показываем контекстное меню
@@ -315,7 +315,8 @@ class WorkerThread(QThread):
         self.__playBlockStatus = val
         if self.__playBlockStatus:
             for file in self.lander.files:
-                self.lander.files[file].flush()
+                if not self.lander.files[file].closed:
+                    self.lander.files[file].flush()
             self.signals.updChartSignal.emit(self.cache)
             self.clearCache()
             self.cnt = 0
