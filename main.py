@@ -24,6 +24,22 @@ class PlayButton(QtWidgets.QPushButton):
         self.isFirst: bool = True
 
 
+class TimeLabel(QtWidgets.QLabel):
+    def __init__(self, *args, **kargs):
+        super().__init__(*args, **kargs)
+
+        self.setAlignment(Qt.AlignCenter)
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
+                           QtWidgets.QSizePolicy.Minimum)
+
+    
+    def setMyText(self, lander: PFSim):
+        path_to_file = lander.files["tr_3d"].name
+        path_to_dir = os.path.dirname(path_to_file)
+        text = os.path.basename(path_to_dir)
+        self.setText(text)
+
+
 class ResListItem(QtWidgets.QListWidgetItem):
     def __init__(self, parent, text: str, file_path: str, height=15, width=100):
         super().__init__(parent)
@@ -131,6 +147,9 @@ class MainForm(QtWidgets.QWidget):
         chart_btns_layout.addWidget(empty2DButton)
         self.__layout.addLayout(chart_btns_layout)
 
+        self.time_label = TimeLabel("time")
+        self.time_label.hide()
+        self.__layout.addWidget(self.time_label)
         self.resList = ResListWidget(self)
         self.resList.hide()
         self.__layout.addWidget(self.resList)
@@ -196,6 +215,8 @@ class MainForm(QtWidgets.QWidget):
             self.lander.build()
             # Задаём начальные состояния
             self.lander.init_state()
+            self.time_label.setMyText(self.lander)
+            self.time_label.show()
             self.resList.setRes(self.lander)
             self.resList.show()
             self.worker = WorkerThread(self, self.lander)
