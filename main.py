@@ -176,7 +176,7 @@ class MainForm(QtWidgets.QWidget):
     def openPlot(self, item: ResListItem):
         plot_name = item.text()
         chart_type = "3D" if plot_name == "tr_3d" else "2D"
-        self.worker.setBlockPlay(True)
+        oldStatus = self.worker.setBlockPlay(True)
         w = flyplot.PlotWindow(main_window=self,
                                chart_type=chart_type)
         w.show()
@@ -184,13 +184,15 @@ class MainForm(QtWidgets.QWidget):
         self.windows.append(w)
         self.openedWins[plot_name]["path"] = item.file_path
         self.openedWins[plot_name]["wins"].append(w)
-        self.worker.setBlockPlay(False)
+        self.worker.setBlockPlay(oldStatus)
     
     def openPlotIn(self, w: flyplot.PlotWindow, item: ResListItem):
+        oldStatus = self.worker.setBlockPlay(True)
         plot_name = item.text()
         w.addChart(item.file_path)
         self.openedWins[plot_name]["path"] = item.file_path
         self.openedWins[plot_name]["wins"].append(w)
+        self.worker.setBlockPlay(oldStatus)
 
 
     @Slot()
@@ -333,6 +335,7 @@ class WorkerThread(QThread):
         self.cnt = 0
 
     def setBlockPlay(self, val: bool):
+        oldStatus = self.__playBlockStatus
         self.__playBlockStatus = val
         if self.__playBlockStatus:
             for file in self.lander.files:
@@ -341,6 +344,8 @@ class WorkerThread(QThread):
             self.signals.updChartSignal.emit(self.cache)
             self.clearCache()
             self.cnt = 0
+        
+        return oldStatus
 
     def clearCache(self):
         for val in self.cache.values():
