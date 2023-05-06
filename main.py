@@ -242,6 +242,7 @@ class MainForm(QtWidgets.QWidget):
         dialog.setViewMode(QtWidgets.QFileDialog.Detail)  # type: ignore
         if dialog.exec():
             model_file = dialog.selectedFiles()[0]
+            self.path_to_model = model_file
             self.browse_label.setText(os.path.abspath(model_file))
             if hasattr(self, "worker"):
                 self.worker.terminate()
