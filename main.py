@@ -421,6 +421,6 @@ class WorkerThread(QThread):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    window = MainForm("data/space_rider.yaml")
+    window = MainForm("data/py_rider.yaml")
     window.show()
     sys.exit(app.exec())
