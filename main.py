@@ -9,8 +9,10 @@ from PySide6 import QtWidgets
 from PySide6 import QtGui
 from PySide6 import QtCore
 
-from parafoil import PFSim
+import bot
 import flyplot
+from parafoil import PFSim
+
 
 # Поддержка многоокнного режима для OpenGl
 QtCore.QCoreApplication.setAttribute(
@@ -276,7 +278,7 @@ class MainForm(QtWidgets.QWidget):
             elif plot_name == "tr_xz":
                 kargs["x"] = cache["x"]
                 kargs["y"] = cache["z"]
-            elif plot_name == "tr_xy":
+            elif plot_name == "tr_yz":
                 kargs["x"] = cache["y"]
                 kargs["y"] = cache["z"]
             else:
@@ -415,12 +417,14 @@ class WorkerThread(QThread):
         loast_alt = start_alt - self.lander.state["altitude"]
         self.signals.progresSignal.emit(loast_alt/start_alt)
         self.signals.compliteSignal.emit()
-        elapsed = time.time() - st
+        elapsed = round(time.time() - st)
         print("elapsed =", elapsed)
+        bot.send_OK(elapsed)
 
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    window = MainForm("data/py_rider.yaml")
+    app.setWindowIcon(flyplot.get_icon("amogus"))
+    window = MainForm("data/ru_rider.yaml")
     window.show()
     sys.exit(app.exec())
