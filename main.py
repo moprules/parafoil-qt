@@ -30,9 +30,9 @@ class TimeLabel(QtWidgets.QLabel):
     def __init__(self, *args, **kargs):
         super().__init__(*args, **kargs)
 
-        self.setAlignment(Qt.AlignCenter)
-        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
-                           QtWidgets.QSizePolicy.Minimum)
+        self.setAlignment(Qt.AlignCenter) # type: ignore
+        self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, # type: ignore
+                           QtWidgets.QSizePolicy.Minimum) # type: ignore
 
     
     def setMyText(self, lander: PFSim):
@@ -49,7 +49,7 @@ class ResListItem(QtWidgets.QListWidgetItem):
         self.setText(text)
         self.file_path = file_path
         self.setSizeHint(QtCore.QSize(width, height))
-        self.setTextAlignment(Qt.AlignLeft)
+        self.setTextAlignment(Qt.AlignLeft) # type: ignore
 
 
 class ResListWidget(QtWidgets.QListWidget):
@@ -64,7 +64,7 @@ class ResListWidget(QtWidgets.QListWidget):
         self.my_parent.openPlot(item)
 
     def contextMenuEvent(self, event):
-        item: ResListItem = self.itemAt(event.pos())
+        item: ResListItem = self.itemAt(event.pos()) # type: ignore
         # Создаем контекстное меню
         contextMenu = QtWidgets.QMenu(self)
 
@@ -112,16 +112,16 @@ class MainForm(QtWidgets.QWidget):
         self.setMinimumWidth(230)
 
         self.__layout = QtWidgets.QVBoxLayout()
-        self.__layout.setAlignment(Qt.AlignTop)
+        self.__layout.setAlignment(Qt.AlignTop) # type: ignore
         self.setLayout(self.__layout)
         browse_layout = QtWidgets.QHBoxLayout()
         self.browse_label = QtWidgets.QLabel(self.path_to_model)
-        self.browse_label.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
-                                        QtWidgets.QSizePolicy.Minimum)
+        self.browse_label.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, # type: ignore
+                                        QtWidgets.QSizePolicy.Minimum) # type: ignore
         browse_layout.addWidget(self.browse_label)
         browse_button = QtWidgets.QPushButton("Открыть")
-        browse_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
-                                    QtWidgets.QSizePolicy.Fixed)
+        browse_button.setSizePolicy(QtWidgets.QSizePolicy.Fixed, # type: ignore
+                                    QtWidgets.QSizePolicy.Fixed) # type: ignore
         browse_button.clicked.connect(self.on_browse)
         browse_layout.addWidget(browse_button)
         self.__layout.addLayout(browse_layout)
@@ -135,7 +135,7 @@ class MainForm(QtWidgets.QWidget):
         process_layout.addWidget(self.play_btn)
         # создаем прогресс-бар
         self.progress_bar = QtWidgets.QProgressBar()
-        self.progress_bar.setAlignment(Qt.AlignCenter)
+        self.progress_bar.setAlignment(Qt.AlignCenter) # type: ignore
         self.progress_bar.setValue(0)
         process_layout.addWidget(self.progress_bar)
         self.__layout.addLayout(process_layout)
@@ -166,7 +166,7 @@ class MainForm(QtWidgets.QWidget):
 
             for val in self.openedWins.values():
                 try:
-                    val["wins"].remove(w)
+                    val["wins"].remove(w) # type: ignore
                 except:
                     pass
             
@@ -185,7 +185,7 @@ class MainForm(QtWidgets.QWidget):
         w.addChart(item.file_path)
         self.windows.append(w)
         self.openedWins[plot_name]["path"] = item.file_path
-        self.openedWins[plot_name]["wins"].append(w)
+        self.openedWins[plot_name]["wins"].append(w) # type: ignore
         self.worker.setBlockPlay(oldStatus)
     
     def openPlotIn(self, w: flyplot.PlotWindow, item: ResListItem):
@@ -193,7 +193,7 @@ class MainForm(QtWidgets.QWidget):
         plot_name = item.text()
         w.addChart(item.file_path)
         self.openedWins[plot_name]["path"] = item.file_path
-        self.openedWins[plot_name]["wins"].append(w)
+        self.openedWins[plot_name]["wins"].append(w) # type: ignore
         self.worker.setBlockPlay(oldStatus)
 
 
@@ -287,7 +287,7 @@ class MainForm(QtWidgets.QWidget):
 
             file_path = self.openedWins[plot_name]["path"]
             for w in self.openedWins[plot_name]["wins"]:
-                w.updChart(file_path, **kargs)
+                w.updChart(file_path, **kargs) # type: ignore
 
     def closeEvent(self, event: QtGui.QCloseEvent):
 
